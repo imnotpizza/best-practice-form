@@ -34,7 +34,7 @@ export default function DeliveryFormApp() {
   });
 
   return (
-    <main className="max-w-[50vw] h-screen">
+    <main className="w-screen h-screen flex justify-center">
       {isLoading && (
         <div className="w-full h-full flex justify-center items-center">
           Loading...
@@ -46,9 +46,11 @@ export default function DeliveryFormApp() {
         </div>
       )}
       {!isLoading && !isError && (
-        <FormProvider {...methods}>
-          <DeliveryFormView />
-        </FormProvider>
+        <section className="h-full">
+          <FormProvider {...methods}>
+            <DeliveryFormView />
+          </FormProvider>
+        </section>
       )}
     </main>
   );
