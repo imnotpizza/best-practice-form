@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import {
+  FieldErrors,
+  SubmitErrorHandler,
+  SubmitHandler,
+  useFormContext,
+} from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,14 +37,24 @@ export default function DeliveryFormView() {
   const [submitSuccess, setSubmitSuccess] = useState(true);
 
   // 접수 API 모의
-  const submitForm = async (data: any) => {
+  const submitForm: SubmitHandler<MDeliveryForm> = async (data) => {
     try {
+      // submit 관련 처리
       await submitDeliveryAPI(data);
       setSubmitSuccess(true);
     } catch (error) {
+      // form 제출 시 실패 관련 처리
       console.error('Error submitting form:', error);
       setSubmitSuccess(false);
     }
+  };
+
+  const onSubmitError: SubmitErrorHandler<MDeliveryForm> = (errors) => {
+    // validation 실패 관련 처리
+    console.error('Form submission error:', errors);
+    const errorMsgList = getErrorMessages(errors);
+    // 맨 첫번째 에러 메세지 출력
+    alert(errorMsgList[0]);
   };
 
   const onLoadSavedData = async () => {
@@ -56,10 +71,56 @@ export default function DeliveryFormView() {
     }
   };
 
+  const getErrorMessages = (errors: FieldErrors) => {
+    const errorMsgList: string[] = [];
+
+    getErrorMsgListFromFieldErrors(errors, errorMsgList);
+    return errorMsgList;
+  };
+
+  /**
+   * react hook from 에러 객체에서 에러 메세지만 추출
+   * - 객체는 {key: 필드 변수명, ref: input ref, message: 에러 메세지}의 형태로 들어옴
+   * - 여기서 message 프로퍼티만 추출
+   * @param errors: RHF errors 객체
+   * @param errorMsgList: 에러 메세지 담겨질 배열
+   * @returns
+   */
+  const getErrorMsgListFromFieldErrors = (
+    errors: FieldErrors,
+    errorMsgList: string[],
+  ) => {
+    Object.keys(errors).forEach((key) => {
+      const error = errors[key];
+      if (error && error.hasOwnProperty('message')) {
+        errorMsgList.push(error.message as string);
+      } else {
+        getErrorMsgListFromFieldErrors(error as FieldErrors, errorMsgList); // 재귀 호출
+      }
+    });
+  };
+
+  /**
+   * 에러 객체에서 message만 추출
+   * - hasOwnProperty 사용해 message가
+   */
+  const getList = (errors: FieldErrors) => {
+    const errorMessages: string[] = [];
+    Object.keys(errors).forEach((key) => {
+      const error = errors[key];
+      if (error && error.hasOwnProperty('message')) {
+        errorMessages.push(error.message as string);
+      } else {
+        getList(error as FieldErrors); // 재귀 호출
+      }
+    });
+    return errorMessages;
+  };
+
   return (
     <>
       <form
-        onSubmit={handleSubmit(submitForm)}
+        onSubmit={handleSubmit(submitForm, onSubmitError)}
         className="w-full flex justify-start items-start flex-col gap-4 p-4"
       >
         <DeliveryItemSelect />
