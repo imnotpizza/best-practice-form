@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { MDeliveryForm } from '@/types/delivery.interface';
-import { useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import ErrorText from './ui/ErrorText';
 import { DELIVERY_ITEMS } from '@/enums';
 
@@ -20,21 +19,21 @@ const options = Object.values(DELIVERY_ITEMS).map((item) => ({
 }));
 
 export default function DeliveryItemSelect() {
+  const { control } = useFormContext<MDeliveryForm>();
+
   const {
-    watch,
-    setValue,
-    formState: { errors, isSubmitted, isValid },
-    setError,
-  } = useFormContext<MDeliveryForm>();
+    field,
+    fieldState: { error },
+  } = useController({
+    name: 'item',
+    control,
+  });
 
   return (
     <div className="w-full flex flex-col gap-2">
       <h2 className="font-semibold">배송 물품 선택</h2>
-      <Select
-        value={watch('item')}
-        onValueChange={(value: DELIVERY_ITEMS) => setValue('item', value)}
-      >
-        <SelectTrigger className={cn(errors.item?.message && 'border-red-500')}>
+      <Select value={field.value} onValueChange={field.onChange}>
+        <SelectTrigger className={cn(error && 'border-red-500')}>
           <SelectValue placeholder="배송 물품 선택" />
         </SelectTrigger>
         <SelectContent>
@@ -48,7 +47,7 @@ export default function DeliveryItemSelect() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <ErrorText errText={errors.item?.message} />
+      <ErrorText errText={error?.message} />
     </div>
   );
 }
