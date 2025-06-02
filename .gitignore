@@ -25,3 +25,5 @@ dist-ssr
 .npmrc
 .env.*
 .yarnrc.yml
+*storybook.log
+storybook-static
